@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="C:\pleiades\workspace\SalesB-Seller" default="copy" name="copycommonfile">
+	<property name="common.model.dir"
+		value="C:\pleiades\workspace\SalesB-Common/src/main/java/handong/capstone2019s/salesb/domain/model/" />
+	<property name="common.properties.dir"
+		value="C:\pleiades\workspace\SalesB-Common/src/main/resources/i18n/" />
+	<property name="model.dir"
+		value="C:\pleiades\workspace\SalesB-Seller/src/main/java/handong/capstone2019s/salesb/domain/model/" />
+	<property name="properties.dir"
+		value="C:\pleiades\workspace\SalesB-Seller/src/main/resources/i18n/" />
+	<target name="copy">
+		<copy verbose="true" overwrite="true" force="true" todir="${model.dir}/">
+			<fileset dir="${common.model.dir}/">
+				<include name="*.java" />
+			</fileset>
+		</copy>
+		<copy verbose="true" overwrite="true" force="true" todir="${properties.dir}/">
+			<fileset dir="${common.properties.dir}">
+				<include name="*.properties" />
+			</fileset>
+		</copy>
+	</target>
+</project>

@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Built-By: user
+Build-Jdk: 11.0.4
+Implementation-Title: TERASOLUNA Server Framework for Java (5.x) - Tour 
+ Reservation Application - Web Layer
+Implementation-Version: 5.5.1.RELEASE
+Implementation-Vendor-Id: org.terasoluna.app
+Implementation-Vendor: TERASOLUNA Framework
+Created-By: Maven Integration for Eclipse
+

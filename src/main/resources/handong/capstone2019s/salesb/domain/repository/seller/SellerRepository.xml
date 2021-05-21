@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="handong.capstone2019s.salesb.domain.repository.seller.SellerRepository">
+
+	<!-- CUSTOMER -->
+	<resultMap id="customeresultMap" type="Customer">
+		<id property="customerCode" column="customer_code" />
+		<result property="customerName" column="customer_name" />
+		<result property="customerMail" column="customer_mail" />
+		<result property="customerVersion" column="customer_version" />
+		<result property="customerTel" column="customer_tel" />
+		<result property="customerPass" column="customer_pass" />
+	</resultMap>
+
+	<insert id="insertcustomer" parameterType="Customer">
+		<selectKey keyProperty="customerCode" resultType="string"
+			order="BEFORE">
+			SELECT
+			TO_CHAR(nextval('CUSTOMER_CODE_SEQ'),'FM00000000') AS
+			customerCode
+		</selectKey>
+		INSERT INTO
+		customer
+		(
+		customer_code,
+		customer_name,
+		customer_mail,
+		customer_tel,
+		customer_version,
+		customer_pass,
+		customer_add_date
+		)
+		VALUES
+		(
+		#{customerCode},
+		#{customerName},
+		#{customerMail},
+		#{customerTel},
+		#{customerVersion},
+		#{customerPass},
+		current_timestamp
+		)
+	</insert>
+
+	<insert id="insertsellercustomer" parameterType="SellerCustomer">
+		INSERT INTO
+		seller_customer
+		(
+		seller_code,
+		customer_code
+		)
+		VALUES
+		(
+		#{sellerCode},
+		#{customerCode}
+		)
+	</insert>
+
+
+	<!-- SELLER -->
+	<resultMap id="sellerResultMap" type="Seller">
+		<id property="sellerCode" column="seller_code" />
+		<result property="sellerName" column="seller_name" />
+		<result property="sellerMail" column="seller_mail" />
+		<result property="sellerVersion" column="seller_version" />
+		<result property="sellerTel" column="seller_tel" />
+		<result property="sellerPass" column="seller_pass" />
+	</resultMap>
+
+	<select id="findBySellerId" parameterType="string"
+		resultMap="sellerResultMap">
+		SELECT
+		seller_code,
+		seller_name,
+		seller_mail,
+		seller_tel,
+		seller_version,
+		seller_pass,
+		seller_manage_admin,
+		seller_information,
+		seller_image_url
+		FROM
+		seller
+		WHERE
+		seller_code = #{sellerCode}
+	</select>
+
+	<insert id="insertseller" parameterType="Seller">
+		<selectKey keyProperty="sellerCode" resultType="string"
+			order="BEFORE">
+			SELECT
+			TO_CHAR(nextval('SELLER_CODE_SEQ'),'FM00000000') AS
+			sellerCode
+		</selectKey>
+		INSERT INTO
+		seller
+		(
+		seller_code,
+		seller_name,
+		seller_mail,
+		seller_tel,
+		seller_version,
+		seller_pass
+		)
+		VALUES
+		(
+		#{sellerCode},
+		#{sellerName},
+		#{sellerMail},
+		#{sellerTel},
+		#{sellerVersion},
+		#{sellerPass}
+		)
+	</insert>
+
+	<resultMap id="sellerProductMap" type="SellerProduct">
+		<id property="productCode" column="product_code" />
+		<result property="productModel" column="product_model" />
+		<result property="productBodyStyle" column="product_body_style" />
+		<result property="productYear" column="product_year" />
+		<result property="productMonth" column="product_month" />
+		<result property="productPrice" column="product_price" />
+		<result property="productMake" column="product_make" />
+		<result property="productMileage" column="product_mileage" />
+		<result property="productEngine" column="product_engine" />
+		<result property="productFuel" column="product_fuel" />
+		<result property="productTransmission"
+			column="product_transmission" />
+		<result property="productColor" column="product_color" />
+		<result property="productImageUrl" column="product_image_url" />
+
+	</resultMap>
+
+
+	<select id="countBySellerProduct" parameterType="SellerProduct"
+		resultType="_long">
+		SELECT
+		COUNT(*)
+		FROM
+		product
+		WHERE
+		product_delete_date IS NULL
+		AND
+		seller_code = #{product.sellerCode}
+	</select>
+	<select id="countBySeller" parameterType="Seller"
+		resultType="_long">
+		SELECT
+		COUNT(*)
+		FROM
+		seller
+	</select>
+
+	<select id="showSeller" parameterType="Seller"
+		resultMap="sellerResultMap">
+		SELECT
+		seller_name,
+		seller_tel,
+		seller_mail
+		FROM
+		seller
+	</select>
+	<select id="showSellerProduct" parameterType="SellerProduct"
+		resultMap="sellerProductMap">
+		SELECT
+		product_model,
+		product_body_style,
+		product_year,
+		product_month,
+		product_price,
+		product_make,
+		product_mileage,
+		product_engine,
+		product_fuel,
+		product_transmission,
+		product_color,
+		product_image_url,
+		product_code
+		FROM
+		product
+		WHERE
+		product_delete_date IS NULL
+		AND
+		seller_code = #{product.sellerCode}
+		<if test="product.productModel != null">
+			AND
+			product_model ILIKE '%' || #{product.productModel} ||
+			'%'
+		</if>
+		<if test="product.productBodyStyle != null">
+			AND
+			product_body_style ILIKE '%' ||
+			#{product.productBodyStyle} || '%'
+		</if>
+		<if test="product.productColor != null">
+			AND
+			product_color ILIKE '%' || #{product.productColor} ||
+			'%'
+		</if>
+		<if
+			test="product.productPrice != null || product.productMake != null ||
+	product.productMileage !=null || product.productEngine != null ||
+	product.productFuel != null || product.productTransmission != null">
+			AND
+			(product_price || product_make || product_mileage ||
+			product_engine
+			|| product_fuel || product_transmission) ILIKE '%' ||
+			#{product.productPrice} || '%'
+		</if>
+		ORDER BY product_code DESC LIMIT #{pageable.pageSize} OFFSET
+		#{pageable.offset}
+	</select>
+	<insert id="insertproduct" parameterType="SellerProduct">
+		<selectKey keyProperty="productCode" resultType="string"
+			order="BEFORE">
+			SELECT
+			TO_CHAR(nextval('PRODUCT_CODE_SEQ'),'FM00000000') AS
+			productCode
+		</selectKey>
+		INSERT INTO
+		product
+		(
+		product_model,
+		product_body_style,
+		product_year,
+		product_month,
+		product_price,
+		product_make,
+		product_mileage,
+		product_engine,
+		product_fuel,
+		product_transmission,
+		product_color,
+		product_image_url,
+		product_code,
+		seller_code
+		)
+		VALUES
+		(
+		#{product.productModel},
+		#{product.productBodyStyle},
+		#{product.productYear},
+		#{product.productMonth},
+		#{product.productPrice},
+		#{product.productMake},
+		#{product.productMileage},
+		#{product.productEngine},
+		#{product.productFuel},
+		#{product.productTransmission},
+		#{product.productColor},
+		#{product.productImageUrl},
+		#{productCode},
+		#{sellerCode}
+		)
+	</insert>
+
+	<resultMap id="requestToSellerMap" type="RequestToSeller">
+		<id property="seq" column="seq" />
+		<result property="customerName" column="customer_name" />
+		<result property="requestContent" column="request_content" />
+		<result property="customerMail" column="customer_mail" />
+	</resultMap>
+
+	<select id="countByRequestToSeller"
+		parameterType="RequestToSeller" resultType="_long">
+		SELECT
+		COUNT(*)
+		FROM
+		request_to_seller
+		WHERE delete_date IS NULL
+	</select>
+
+	<select id="showRequestToSeller" parameterType="RequestToSeller"
+		resultMap="requestToSellerMap">
+		SELECT
+		customer_code,
+		request_content,
+		customer_mail
+		FROM
+		request_to_seller
+		WHERE delete_date IS NULL
+	</select>
+
+	<update id="updateCustomer" parameterType="string">
+		UPDATE
+		request_to_seller
+		SET
+		delete_date = current_timestamp
+		WHERE
+		customer_code
+		= #{customerCode}
+	</update>
+
+	<select id="findByProductId" parameterType="string"
+		resultMap="sellerProductMap">
+		SELECT
+		product_code,
+		product_model,
+		product_body_style,
+		product_year,
+		product_month,
+		product_price,
+		product_make,
+		product_mileage,
+		product_engine,
+		product_fuel,
+		product_transmission,
+		product_color,
+		product_image_url
+		FROM
+		product
+		WHERE
+		product_code =
+		#{productCode}
+	</select>
+
+
+	<update id="deleteById" parameterType="string">
+		UPDATE
+		product
+		SET
+		product_delete_date = current_timestamp
+		WHERE
+		product_code =
+		#{productCode}
+	</update>
+
+	<update id="update" parameterType="string">
+		UPDATE
+		product
+		SET
+		product_model
+		= #{productModel},
+		product_body_style = #{productBodyStyle},
+		product_year = #{productYear},
+		product_month = #{productMonth},
+		product_price = #{productPrice},
+		product_make = #{productMake},
+		product_mileage = #{productMileage},
+		product_engine = #{productEngine},
+		product_fuel = #{productFuel},
+		product_transmission =
+		#{productTransmission},
+		product_color = #{productColor}
+		WHERE
+		product_code = #{productCode}
+	</update>
+
+	<update id="updateSeller" parameterType="string">
+		UPDATE
+		seller
+		SET
+		seller_name = #{sellerName},
+		seller_mail = #{sellerMail},
+		seller_tel =
+		#{sellerTel},
+		seller_information = #{sellerInformation},
+		seller_image_url = #{sellerImageURL}
+		WHERE
+		seller_code = #{sellerCode}
+	</update>
+
+	<insert id="insertRequest" parameterType="Request">
+		<selectKey keyProperty="seq" resultType="int" order="BEFORE">
+			SELECT
+			cast(TO_CHAR(nextval('request_seq_seq'),'FM00000000') as integer)AS
+			seq
+		</selectKey>
+		INSERT INTO
+		request
+		(
+		seq,
+		client,
+		the_person_in_charge,
+		request_name,
+		request_contents,
+		add_time,
+		update_time,
+		delete_time,
+		var
+		)
+		VALUES
+		(
+		#{seq},
+		#{client},
+		#{thePersonInCharge},
+		#{requestName},
+		#{requestContents},
+		now(),
+		now(),
+		NULL,
+		1
+		)
+	</insert>
+
+	<!-- CustomerRequest -->
+	<resultMap id="customerRequestResultMap" type="Request">
+		<id property="seq" column="seq" />
+		<result property="client" column="client" />
+		<result property="thePersonInCharge"
+			column="the_person_in_charge" />
+		<result property="requestName" column="request_name" />
+		<result property="requestContents" column="request_contents" />
+		<result property="addTime" column="add_time" />
+		<result property="updateTime" column="update_time" />
+		<result property="deleteTime" column="delete_time" />
+	</resultMap>
+
+	<select id="selectCustomerRequestbySellerName"
+		parameterType="Request" resultMap="customerRequestResultMap">
+		SELECT
+		seq,
+		client,
+		the_person_in_charge,
+		request_name,
+		request_contents,
+		add_time,
+		update_time
+		FROM
+		customer_request
+		WHERE
+		the_person_in_charge =
+		#{thePersonInCharge}
+		<if test="requestform.searchOptions == 0">
+			AND
+			request_name ILIKE '%' ||
+			#{requestform.searchKeywords}
+			|| '%'
+		</if>
+		<if test="requestform.searchOptions == 1">
+			AND
+			request_contents ILIKE '%' ||
+			#{requestform.searchKeywords} || '%'
+		</if>
+		<if test="requestform.searchOptions == 2">
+			AND
+			client ILIKE '%' ||
+			#{requestform.searchKeywords} || '%'
+		</if>
+		<if test="requestform.searchOptions == 3">
+			AND
+			request_name || request_contents ILIKE '%' ||
+			#{requestform.searchKeywords} || '%'
+		</if>
+	</select>
+
+	<select id="selectCustomerRequestbySeq" parameterType="Request"
+		resultMap="customerRequestResultMap">
+		SELECT
+		seq,
+		client,
+		the_person_in_charge,
+		request_name,
+		request_contents,
+		add_time,
+		update_time
+		FROM
+		customer_request
+		WHERE
+		seq =
+		#{seq}
+	</select>
+
+	<select id="countCustomerRequestbySellerName"
+		parameterType="Request" resultType="_long">
+		SELECT
+		COUNT(*)
+		FROM
+		customer_request
+		WHERE
+		the_person_in_charge =
+		#{thePersonInCharge}
+		<if test="requestform.searchOptions == 0">
+			AND
+			request_name ILIKE '%' ||
+			#{requestform.searchKeywords}
+			|| '%'
+		</if>
+		<if test="requestform.searchOptions == 1">
+			AND
+			request_contents ILIKE '%' ||
+			#{requestform.searchKeywords} || '%'
+		</if>
+		<if test="requestform.searchOptions == 2">
+			AND
+			client ILIKE '%' ||
+			#{requestform.searchKeywords} || '%'
+		</if>
+		<if test="requestform.searchOptions == 3">
+			AND
+			request_name || request_contents ILIKE '%' ||
+			#{requestform.searchKeywords} || '%'
+		</if>
+	</select>
+
+</mapper>
